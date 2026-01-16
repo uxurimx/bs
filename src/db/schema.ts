@@ -31,4 +31,18 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
   createdAt: timestamp('created_at').defaultNow(),
 })
 
-// Aquí iremos agregando más tablas luego (productos, categorías, etc.)
+export const userSettings = pgTable('user_settings', {
+  userId: text('user_id').primaryKey(), // Usamos el ID de Clerk como llave primaria
+  settings: json('settings').$type<{
+    modules: {
+      billing: boolean;
+      reservations: boolean;
+      ai_menu: boolean;
+    };
+    theme: string;
+  }>().default({ 
+    modules: { billing: false, reservations: false, ai_menu: false }, 
+    theme: 'system' 
+  }),
+  createdAt: timestamp('created_at').defaultNow(),
+});

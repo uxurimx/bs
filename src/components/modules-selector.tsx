@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toggleModuleAction } from "@/app/(app)/actions";
+import { toggleUserModuleAction } from "@/app/(app)/actions";
 import { toast } from "sonner";
 import { CreditCard, CalendarDays, Bot, Check, Lock } from "lucide-react";
 import { cn } from "@/src/lib/utils";
@@ -31,9 +31,17 @@ const AVAILABLE_MODULES = [
   },
 ];
 
-export function ModulesSelector({ tenant }: { tenant: any }) {
-  // Estado local para Optimistic UI (respuesta inmediata)
-  const [modules, setModules] = useState(tenant.settings?.modules || {});
+type ModulesSelectorProps = {
+  configData: {
+    settings: any; 
+  }
+};
+
+// 👇 CORRECCIÓN AQUÍ: Recibimos 'configData' en lugar de 'tenant'
+export function ModulesSelector({ configData }: ModulesSelectorProps) {
+  
+  // 👇 CORRECCIÓN AQUÍ: Leemos de 'configData.settings'
+  const [modules, setModules] = useState(configData.settings?.modules || {});
   const [loading, setLoading] = useState<string | null>(null);
 
   async function handleToggle(moduleKey: string, currentValue: boolean) {
@@ -44,7 +52,7 @@ export function ModulesSelector({ tenant }: { tenant: any }) {
     setModules((prev: any) => ({ ...prev, [moduleKey]: newValue }));
 
     // 2. Server Action
-    const result = await toggleModuleAction(tenant.id, moduleKey, newValue);
+    const result = await toggleUserModuleAction(moduleKey, newValue);
 
     if (result?.error) {
       // Revertir si falló

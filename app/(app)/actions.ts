@@ -10,6 +10,8 @@ import webpush from "web-push";
 import { pushSubscriptions } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 
+import { userSettings } from "@/src/db/schema"; // Importar nueva tabla
+
 // 1. Agregamos 'prevState: any' como primer argumento
 // ... imports
 
@@ -124,38 +126,41 @@ export async function sendTestNotificationAction() {
 
 // ... imports existentes
 
-// Actualizar Módulos (Feature Flags)
-export async function toggleModuleAction(tenantId: number, moduleKey: string, isActive: boolean) {
+export async function toggleUserModuleAction(moduleKey: string, isActive: boolean) {
   const { userId } = await auth();
   if (!userId) return { error: "No autorizado" };
 
-  // 1. Verificar que el tenant pertenezca al usuario (Seguridad Crítica)
-  const tenant = await db.query.tenants.findFirst({
-    where: (tenants, { eq, and }) => and(eq(tenants.id, tenantId), eq(tenants.ownerId, userId)),
+  // 1. Buscar configuración actual
+  const existingConfig = await db.query.userSettings.findFirst({
+    where: eq(userSettings.userId, userId),
   });
 
-  if (!tenant) return { error: "Espacio de trabajo no encontrado" };
-
-  // 2. Preparar el nuevo objeto de settings
-  // TypeScript hack: Casteamos a 'any' para manipular el JSON fácilmente
-  const currentSettings = (tenant.settings as any) || { modules: {}, theme: 'system' };
+  // 2. Preparar el nuevo JSON
+  const currentSettings = (existingConfig?.settings as any) || { 
+    modules: { billing: false, reservations: false, ai_menu: false }, 
+    theme: 'system' 
+  };
   
   const newSettings = {
     ...currentSettings,
     modules: {
       ...currentSettings.modules,
-      [moduleKey]: isActive, // Toggle mágico
+      [moduleKey]: isActive,
     },
   };
 
   try {
-    // 3. Guardar en DB
-    await db.update(tenants)
-      .set({ settings: newSettings })
-      .where(eq(tenants.id, tenantId));
+    // 3. Guardar (Upsert: Insertar o Actualizar)
+    await db.insert(userSettings).values({
+      userId,
+      settings: newSettings
+    }).onConflictDoUpdate({
+      target: userSettings.userId,
+      set: { settings: newSettings }
+    });
     
-    revalidatePath("/settings"); // Refrescar la UI
-    revalidatePath("/"); // Refrescar el Sidebar
+    revalidatePath("/settings");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error(error);

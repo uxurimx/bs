@@ -42,8 +42,6 @@ Ready to deploy in vercel
 
 
 
-
-
 dev
 * Add analitycs
 * Payments (stripe, wallet)
