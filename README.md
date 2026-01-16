@@ -9,5 +9,21 @@ Ready to deploy in vercel
 * Register and login via clerk
 * Dashboard basic Ux
 
+# v0.1.1
+* Fixed login and signup
+
+# v0.1.2
+* Added configuration module
+* Slugs send to configuration 
+
+# v0.1.3
+* Added themes (dark/light)
+* Responsive design
+
+# v0.1.4
+* Fixed colors and styles
+
+
+
 
 

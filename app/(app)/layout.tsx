@@ -157,10 +157,6 @@ export default function DashboardLayout({
             >
               <Menu className="w-6 h-6" />
             </button>
-            
-            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 hidden sm:block">
-              / {pathname === '/' ? 'Dashboard' : pathname.replace('/', '')}
-            </h2>
           </div>
           
           <div className="flex items-center gap-4">

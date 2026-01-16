@@ -1,4 +1,27 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Por defecto (Light Mode) */
+  body {
+    @apply bg-gray-50 text-slate-900;
+  }
+
+  /* Dark Mode automático */
+  .dark body {
+    /* Usamos Zinc-950 para fondo (no negro puro) y Zinc-200 para texto */
+    @apply bg-zinc-950 text-zinc-200; 
+  }
+}
+
+/* Opcional: Estilo suave para bordes en toda la app */
+@layer utilities {
+  .border-border {
+    @apply border-gray-200 dark:border-zinc-800;
+  }
+}
 
 :root {
   --background: #ffffff;
