@@ -23,6 +23,9 @@ Ready to deploy in vercel
 # v0.1.4
 * Fixed colors and styles
 
+# v0.1.5
+* Fixed bug on create slug
+
 
 
 
