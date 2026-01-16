@@ -26,6 +26,8 @@ Ready to deploy in vercel
 # v0.1.5
 * Fixed bug on create slug
 
+# v0.1.6
+* Added PWA support
 
 
 

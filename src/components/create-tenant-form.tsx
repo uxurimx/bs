@@ -18,7 +18,7 @@ export function CreateTenantForm() {
         <input 
           name="name" 
           type="text" 
-          placeholder="Ej: Hamburguesas del Tío Sam" 
+          placeholder="Tío Sam" 
           className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           required 
         />
@@ -53,7 +53,7 @@ export function CreateTenantForm() {
         disabled={isPending}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-bold transition disabled:opacity-50"
       >
-        {isPending ? "Creando..." : "Crear Restaurante"}
+        {isPending ? "Creando..." : "Crear"}
       </button>
     </form>
   );
