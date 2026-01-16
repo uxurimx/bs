@@ -30,8 +30,17 @@ export async function createTenantAction(prevState: any, formData: FormData) {
     await db.insert(tenants).values({
       name,
       slug,
-      ownerId: userId, // <--- ¡ESTO FALTABA!
+      ownerId: userId,
       isActive: true,
+      settings: {
+        modules: {
+          billing: false, // Empiezan sin facturación (Free Tier)
+          reservations: false,
+          ai_menu: false
+        },
+        theme: 'system'
+      },
+      
     });
   } catch (error: any) { // Tipar error como any o un tipo específico de error de DB
     console.error(error);
@@ -111,4 +120,45 @@ export async function sendTestNotificationAction() {
   }
 
   return { success: true, count: successCount };
+}
+
+// ... imports existentes
+
+// Actualizar Módulos (Feature Flags)
+export async function toggleModuleAction(tenantId: number, moduleKey: string, isActive: boolean) {
+  const { userId } = await auth();
+  if (!userId) return { error: "No autorizado" };
+
+  // 1. Verificar que el tenant pertenezca al usuario (Seguridad Crítica)
+  const tenant = await db.query.tenants.findFirst({
+    where: (tenants, { eq, and }) => and(eq(tenants.id, tenantId), eq(tenants.ownerId, userId)),
+  });
+
+  if (!tenant) return { error: "Espacio de trabajo no encontrado" };
+
+  // 2. Preparar el nuevo objeto de settings
+  // TypeScript hack: Casteamos a 'any' para manipular el JSON fácilmente
+  const currentSettings = (tenant.settings as any) || { modules: {}, theme: 'system' };
+  
+  const newSettings = {
+    ...currentSettings,
+    modules: {
+      ...currentSettings.modules,
+      [moduleKey]: isActive, // Toggle mágico
+    },
+  };
+
+  try {
+    // 3. Guardar en DB
+    await db.update(tenants)
+      .set({ settings: newSettings })
+      .where(eq(tenants.id, tenantId));
+    
+    revalidatePath("/settings"); // Refrescar la UI
+    revalidatePath("/"); // Refrescar el Sidebar
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Error al actualizar módulo" };
+  }
 }

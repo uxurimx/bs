@@ -1,5 +1,5 @@
 // src/db/schema.ts
-import { pgTable, serial, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, boolean, json } from 'drizzle-orm/pg-core';
 
 // Definimos la tabla 'tenants' (restaurantes)
 export const tenants = pgTable('tenants', {
@@ -9,6 +9,17 @@ export const tenants = pgTable('tenants', {
   customDomain: text('custom_domain'), // Por si compran su propio dominio después
   isActive: boolean('is_active').default(true), // Para "apagar" clientes que no pagan
   ownerId: text('owner_id').notNull(),
+  settings: json('settings').$type<{
+    modules: {
+      billing: boolean;
+      reservations: boolean;
+      ai_menu: boolean;
+    };
+    theme: string;
+  }>().default({ 
+    modules: { billing: false, reservations: false, ai_menu: false }, 
+    theme: 'system' 
+  }),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

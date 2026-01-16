@@ -35,6 +35,11 @@ Ready to deploy in vercel
 # v0.1.8
 * Added toasters and better UI
 
+# v0.1.9
+* Added dynamic modules
+
+
+
 
 
 
