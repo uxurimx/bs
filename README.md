@@ -29,6 +29,9 @@ Ready to deploy in vercel
 # v0.1.6
 * Added PWA support
 
+# v0.1.7
+* Added push notifications
+
 
 
 

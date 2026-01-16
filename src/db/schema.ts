@@ -12,4 +12,12 @@ export const tenants = pgTable('tenants', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const pushSubscriptions = pgTable('push_subscriptions', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull(), // Vinculado a Clerk
+  // Guardamos todo el objeto de suscripción como JSON para flexibilidad
+  subscription: text('subscription_json').notNull(), 
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
 // Aquí iremos agregando más tablas luego (productos, categorías, etc.)

@@ -8,6 +8,8 @@ const withPWA = withPWAInit({
   reloadOnOnline: true, // Recarga si recuperas conexión
   disable: process.env.NODE_ENV === "development", // Desactivar en desarrollo para no molestar
   workboxOptions: {
+    importScripts: ["/custom-sw.js"],
+    skipWaiting: true,
     disableDevLogs: true,
   },
 });

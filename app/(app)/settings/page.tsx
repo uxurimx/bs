@@ -3,6 +3,7 @@ import { tenants } from "@/src/db/schema";
 import { CreateTenantForm } from "@/src/components/create-tenant-form"; 
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
+import { PushToggle } from "@/src/components/push-toggle";
 
 export default async function SettingsPage() {
   const { userId } = await auth();
@@ -34,6 +35,10 @@ export default async function SettingsPage() {
         </div>
 
         <div className="col-span-2 space-y-6">
+
+            <div>
+                <PushToggle />
+            </div>
           
           {/* CARD LISTA DE SLUGS */}
           <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 overflow-hidden transition-colors">
