@@ -7,43 +7,53 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar (Barra Lateral) */}
-      <aside className="w-64 bg-white shadow-md hidden md:block">
-        <div className="p-6 border-b">
-          <h2 className="text-2xl font-bold text-blue-600">Menu SaaS</h2>
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white shadow-sm border-r border-gray-200 hidden md:flex flex-col">
+        <div className="h-16 flex items-center px-6 border-b border-gray-100">
+          {/* Nombre Genérico de la Plantilla */}
+          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+            SaaS Starter
+          </h2>
         </div>
-<nav className="p-4 space-y-2">
-  {/* ANTES: href="/dashboard" */}
-  {/* AHORA: href="/" (La raíz es el dashboard) */}
-  <Link href="/" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
-    🏠 Mis Restaurantes
-  </Link>
-  
-  {/* Si creas estas páginas en el futuro, recuerda que la ruta real será /dashboard/billing, 
-      pero la URL pública será /billing */}
-  <Link href="/billing" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
-    💳 Facturación
-  </Link>
-  <Link href="/settings" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg">
-    ⚙️ Configuración
-  </Link>
-</nav>
+
+        <nav className="p-4 space-y-1 flex-1">
+          <Link href="/" className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group">
+            <span className="text-gray-400 group-hover:text-blue-600 transition-colors">📊</span>
+            <span className="font-medium">Dashboard</span>
+          </Link>
+          
+          <Link href="/billing" className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group">
+             <span className="text-gray-400 group-hover:text-blue-600 transition-colors">💳</span>
+             <span className="font-medium">Facturación</span>
+          </Link>
+
+          <Link href="/settings" className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors group">
+             <span className="text-gray-400 group-hover:text-blue-600 transition-colors">⚙️</span>
+             <span className="font-medium">Configuración</span>
+          </Link>
+        </nav>
+        
+        {/* Footer del Sidebar */}
+        <div className="p-4 border-t border-gray-100 text-xs text-gray-400 text-center">
+          v1.0.0 Template
+        </div>
       </aside>
 
       {/* Contenido Principal */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Header (Barra Superior) */}
-        <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6">
-          <div className="font-semibold text-gray-500">Panel de Control</div>
+        {/* Header */}
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8">
+          {/* Breadcrumb o Título de página dinámico */}
+          <div className="font-medium text-gray-500">/ App</div>
+          
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">Hola, Dueño</span>
             <UserButton afterSignOutUrl="/" />
           </div>
         </header>
 
-        {/* El contenido de la página (page.tsx) se renderiza aquí */}
-        <div className="flex-1 overflow-auto p-6">
+        {/* Scroll Area */}
+        <div className="flex-1 overflow-auto p-8">
           {children}
         </div>
       </main>

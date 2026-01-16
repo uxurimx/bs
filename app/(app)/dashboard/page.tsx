@@ -3,39 +3,20 @@ import { tenants } from "@/src/db/schema";
 // Importamos el nuevo componente
 import { CreateTenantForm } from "@/src/components/create-tenant-form"; 
 
-export default async function DashboardPage() {
-  const allTenants = await db.select().from(tenants);
-
+export default function DashboardPage() {
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Mis Restaurantes</h1>
-
-      {/* Grid de Restaurantes Existentes (Igual que antes) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {allTenants.map((tenant) => (
-          <div key={tenant.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-            <h3 className="font-bold text-xl mb-2">{tenant.name}</h3>
-            <p className="text-sm text-gray-500 mb-4">subdominio: {tenant.slug}</p>
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${tenant.isActive ? 'bg-green-500' : 'bg-red-500'}`}></span>
-              <span className="text-xs text-gray-400">{tenant.isActive ? 'Activo' : 'Inactivo'}</span>
-            </div>
-            <a 
-              href={`http://${tenant.slug}.localhost:3000`} 
-              target="_blank"
-              className="mt-4 block text-center text-blue-600 text-sm font-medium hover:underline"
-            >
-              Ver Menú &rarr;
-            </a>
-          </div>
-        ))}
-      </div>
-
-      {/* Formulario de Creación (Ahora es un componente) */}
-      <div className="bg-white p-8 rounded-xl shadow-lg border border-blue-100">
-        <h2 className="text-xl font-bold mb-4">🚀 Crear Nuevo Restaurante</h2>
-        {/* Aquí renderizamos el componente Cliente */}
-        <CreateTenantForm />
+    <div className="h-full flex flex-col items-center justify-center text-center p-12">
+      <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 max-w-lg">
+        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+          ✨
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Bienvenido a tu SaaS</h1>
+        <p className="text-gray-500 mb-6">
+          Este es el dashboard principal. Aquí irán las métricas, gráficos o la funcionalidad principal de tu aplicación.
+        </p>
+        <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600 border border-gray-200">
+          Tip: Ve a <strong>Configuración</strong> para crear tus subdominios (Slugs).
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ export const tenants = pgTable('tenants', {
   slug: text('slug').notNull().unique(), // El subdominio (ej: "donpepe")
   customDomain: text('custom_domain'), // Por si compran su propio dominio después
   isActive: boolean('is_active').default(true), // Para "apagar" clientes que no pagan
+  ownerId: text('owner_id').notNull(),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

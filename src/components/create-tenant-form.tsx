@@ -35,7 +35,7 @@ export function CreateTenantForm() {
             className="flex-1 p-2 border rounded-l-lg focus:ring-2 focus:ring-blue-500 outline-none"
             required 
           />
-          <span className="bg-gray-100 p-2 border border-l-0 rounded-r-lg text-gray-500">.tuapp.com</span>
+          <span className="bg-gray-100 p-2 border border-l-0 rounded-r-lg text-gray-500">.yumm.lat</span>
         </div>
         <p className="text-xs text-gray-400 mt-1">Solo letras minúsculas, sin espacios.</p>
       </div>
