@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { subscribeUserAction, unsubscribeUserAction, sendTestNotificationAction } from "@/app/(app)/actions";
+import { toast } from "sonner"; // <--- Importar toast
 
 // Función auxiliar para convertir la VAPID key
 function urlBase64ToUint8Array(base64String: string) {
@@ -31,30 +32,45 @@ export function PushToggle() {
 
   async function handleToggle() {
     setLoading(true);
-    if (isSubscribed) {
-      // Desuscribirse
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) await sub.unsubscribe();
-      await unsubscribeUserAction();
-      setIsSubscribed(false);
-    } else {
-      // Suscribirse
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-        ),
-      });
-      await subscribeUserAction(sub);
-      setIsSubscribed(true);
+    try {
+        if (isSubscribed) {
+        // Desuscribirse
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) await sub.unsubscribe();
+        await unsubscribeUserAction();
+        setIsSubscribed(false);
+        toast.success("Notificaciones desactivadas");
+        } else {
+        // Suscribirse
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(
+            process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+            ),
+        });
+        await subscribeUserAction(sub);
+        setIsSubscribed(true);
+        toast.success("¡Dispositivo registrado correctamente!"); // <--- Feedback
+        }
+    }catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al cambiar la configuración."); // <--- Feedback
     }
     setLoading(false);
   }
 
   async function sendTest() {
-      await sendTestNotificationAction();
+    //   await sendTestNotificationAction();
+      toast.promise(sendTestNotificationAction(), {
+        loading: 'Enviando prueba...',
+        success: (data) => {
+            if(data?.error) throw new Error(data.error);
+            return '¡Notificación enviada! Revisa tu barra de estado.';
+        },
+        error: 'Error al enviar la prueba',
+      });
   }
 
   return (

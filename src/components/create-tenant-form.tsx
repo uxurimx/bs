@@ -2,6 +2,9 @@
 
 import { useActionState } from "react";
 import { createTenantAction } from "@/app/(app)/actions";
+import { useEffect } from "react";
+import { toast } from "sonner"; // <--- Importar
+
 const initialState = {
   error: "",
 };
@@ -9,6 +12,12 @@ const initialState = {
 export function CreateTenantForm() {
   // useActionState conecta tu Server Action con el estado del formulario
   const [state, formAction, isPending] = useActionState(createTenantAction, initialState);
+
+  useEffect(() => {
+    if (state?.error) {
+      toast.error(state.error); // <--- Muestra el error del servidor (ej: "Slug duplicado")
+    }
+  }, [state]);
 
   return (
     <form action={formAction} className="space-y-4">

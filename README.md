@@ -32,6 +32,13 @@ Ready to deploy in vercel
 # v0.1.7
 * Added push notifications
 
+# v0.1.8
+* Added toasters and better UI
 
 
 
+
+
+dev
+* Add analitycs
+* Payments (stripe, wallet)
