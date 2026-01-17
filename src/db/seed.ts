@@ -1,4 +1,5 @@
 // src/db/seed.ts
+import 'dotenv/config';
 import { db } from "./index";
 import { systemModules } from "./schema";
 import { CORE_MODULES } from "@/src/lib/modules-manifest"; 
