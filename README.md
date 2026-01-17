@@ -48,4 +48,5 @@ Ready to deploy in vercel
 * Added vercel analytics
 
 dev
+* fix run dev (webpack wpa, turbopack)
 * Payments (stripe, wallet)
