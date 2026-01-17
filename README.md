@@ -55,7 +55,7 @@ Ready to deploy in vercel
 # v0.1.13
 * Added scripts on package
 * Added seed for module sharing on db
-
+* Added env management
 
 dev
 * Payments (stripe, wallet)

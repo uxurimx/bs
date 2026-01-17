@@ -9,7 +9,9 @@
     "lint": "eslint",
     "db_push": "drizzle-kit push",
     "db_studio": "drizzle-kit studio",
-    "db_seed": "tsx src/db/seed.ts"
+    "db_seed": "tsx src/db/seed.ts",
+    "env_main": "tsx src/scripts/switch-env.ts main",
+    "env_mirrorq": "tsx src/scripts/switch-env.ts mirrorq"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",
