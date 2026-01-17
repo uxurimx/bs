@@ -288,3 +288,89 @@ export async function getMetricsAction() {
     return { totalViews: 0, viewsByCountry: [] as MetricData[] };
   }
 }
+
+
+// ... (Tus imports existentes) ...
+// Asegúrate de importar las nuevas tablas en el import de arriba:
+import { projects, tasks } from "@/src/db/schema"; 
+
+// --- ACTIONS PARA PROYECTOS ---
+
+// 1. Crear Nuevo Proyecto
+export async function createProjectAction(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) return { error: "No autorizado" };
+
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const identity = formData.get("identity") as string; // Ej: "Trader"
+  const priority = formData.get("priority") as string; // "high", "medium"...
+
+  if (!name) return { error: "El nombre es obligatorio" };
+
+  try {
+    // Insertamos y devolvemos el ID para redireccionar si queremos
+    const [newProject] = await db.insert(projects).values({
+      userId,
+      name,
+      description,
+      priority: priority as any || 'medium',
+      status: 'planning',
+      metadata: {
+        identity: identity || 'General',
+        version: 'v1.0'
+      }
+    }).returning({ id: projects.id });
+
+    revalidatePath("/dashboard"); // Actualiza la vista principal
+    revalidatePath("/projects");
+    return { success: true, projectId: newProject.id };
+
+  } catch (error) {
+    console.error("Error creando proyecto:", error);
+    return { error: "Error al guardar proyecto" };
+  }
+}
+
+// 2. Agregar Tarea Rápida a un Proyecto
+export async function createTaskAction(projectId: number, formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) return { error: "No autorizado" };
+
+  const title = formData.get("title") as string;
+  const priority = formData.get("priority") as string;
+
+  if (!title) return { error: "Título requerido" };
+
+  try {
+    await db.insert(tasks).values({
+      projectId,
+      title,
+      priority: priority as any || 'medium',
+      isDone: false
+    });
+
+    revalidatePath(`/projects/${projectId}`); // Actualiza solo ese proyecto
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Error al crear tarea" };
+  }
+}
+
+// 3. Toggle Tarea (Marcar como hecha)
+export async function toggleTaskAction(taskId: number, currentStatus: boolean) {
+  const { userId } = await auth();
+  if (!userId) return { error: "No autorizado" };
+
+  try {
+    await db.update(tasks)
+      .set({ isDone: !currentStatus })
+      .where(eq(tasks.id, taskId));
+
+    revalidatePath("/projects"); 
+    return { success: true };
+  } catch (error) {
+    return { error: "Error actualizando tarea" };
+  }
+}
