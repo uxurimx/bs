@@ -288,3 +288,171 @@ export async function getMetricsAction() {
     return { totalViews: 0, viewsByCountry: [] as MetricData[] };
   }
 }
+
+
+// ... (Tus imports existentes) ...
+// Asegúrate de importar las nuevas tablas en el import de arriba:
+import { projects, tasks } from "@/src/db/schema"; 
+
+// --- ACTIONS PARA PROYECTOS ---
+
+// 1. Crear Nuevo Proyecto
+export async function createProjectAction(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) return { error: "No autorizado" };
+
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const identity = formData.get("identity") as string; // Ej: "Trader"
+  const priority = formData.get("priority") as string; // "high", "medium"...
+
+  if (!name) return { error: "El nombre es obligatorio" };
+
+  try {
+    // Insertamos y devolvemos el ID para redireccionar si queremos
+    const [newProject] = await db.insert(projects).values({
+      userId,
+      name,
+      description,
+      priority: priority as any || 'medium',
+      status: 'planning',
+      metadata: {
+        identity: identity || 'General',
+        version: 'v1.0'
+      }
+    }).returning({ id: projects.id });
+
+    revalidatePath("/dashboard"); // Actualiza la vista principal
+    revalidatePath("/projects");
+    return { success: true, projectId: newProject.id };
+
+  } catch (error) {
+    console.error("Error creando proyecto:", error);
+    return { error: "Error al guardar proyecto" };
+  }
+}
+
+// 2. Agregar Tarea Rápida a un Proyecto
+export async function createTaskAction(projectId: number, formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) return { error: "No autorizado" };
+
+  const title = formData.get("title") as string;
+  const priority = formData.get("priority") as string;
+
+  if (!title) return { error: "Título requerido" };
+
+  try {
+    await db.insert(tasks).values({
+      projectId,
+      title,
+      priority: priority as any || 'medium',
+      isDone: false
+    });
+
+    revalidatePath(`/projects/${projectId}`); // Actualiza solo ese proyecto
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Error al crear tarea" };
+  }
+}
+
+// --- UTILIDAD DE VERSIONADO (Helper Interno) ---
+function bumpVersion(currentVersion: string = "v0.0.0", type: 'patch' | 'minor' | 'major'): string {
+  // Limpiamos la "v" si existe
+  const clean = currentVersion.replace('v', '');
+  const parts = clean.split('.').map(Number);
+  
+  // Si el formato no es válido (ej: v1.0), lo reseteamos
+  let [major, minor, patch] = parts.length === 3 ? parts : [0, 0, 0];
+
+  if (type === 'patch') patch++;
+  if (type === 'minor') { minor++; patch = 0; }
+  if (type === 'major') { major++; minor = 0; patch = 0; }
+
+  return `v${major}.${minor}.${patch}`;
+}
+
+// app/(app)/actions.ts
+
+// ... (imports y función bumpVersion igual que antes) ...
+
+export async function toggleTaskAction(taskId: number, currentStatus: boolean) {
+  const { userId } = await auth();
+  if (!userId) return { error: "No autorizado" };
+
+  try {
+    // 1. Obtener la tarea junto con su proyecto padre
+    const task = await db.query.tasks.findFirst({
+      where: eq(tasks.id, taskId),
+      with: { project: true }
+    });
+
+    // --- EL FIX ESTÁ AQUÍ ---
+    // Validamos no solo que exista la tarea, sino que tenga un proyecto vinculado.
+    if (!task || !task.project) {
+        return { error: "Tarea o proyecto no encontrado" };
+    }
+
+    // 2. Lógica de Versionado
+    // Ahora TypeScript sabe que 'task.project' NO es null gracias al 'if' de arriba
+    let newVersion = task.project.metadata?.version || "v0.0.1";
+    
+    if (!currentStatus) {
+       // Si estamos completando la tarea (false -> true), subimos versión
+       newVersion = bumpVersion(newVersion, 'patch');
+       
+       // Actualizamos versión del proyecto
+       await db.update(projects)
+         .set({ 
+            // TypeScript ahora confía en que task.project.metadata existe (o es null seguro)
+            metadata: { ...task.project.metadata, version: newVersion },
+            updatedAt: new Date()
+         })
+         .where(eq(projects.id, task.projectId!)); // El '!' es un doble seguro, aunque ya sabemos que existe
+    }
+
+    // 3. Actualizar el estado de la tarea
+    await db.update(tasks)
+      .set({ isDone: !currentStatus })
+      .where(eq(tasks.id, taskId));
+
+    // Revalidamos la ruta del proyecto
+    revalidatePath(`/projects/${task.projectId}`); 
+    
+    return { success: true, newVersion };
+
+  } catch (error) {
+    console.error("Error en toggleTaskAction:", error);
+    return { error: "Error actualizando tarea" };
+  }
+}
+
+// --- NUEVA ACCIÓN: PUBLICAR VERSIÓN (Major Release) ---
+export async function releaseVersionAction(projectId: number) {
+  const { userId } = await auth();
+  const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
+  
+  if (!project) return { error: "Proyecto no encontrado" };
+
+  const newVersion = bumpVersion(project.metadata?.version, 'major');
+
+  await db.update(projects)
+    .set({ 
+       metadata: { ...project.metadata, version: newVersion },
+       updatedAt: new Date()
+    })
+    .where(eq(projects.id, projectId));
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+// --- NUEVA ACCIÓN: CONVERTIR ENTIDADES ---
+// Ejemplo: Convertir Nota -> Tarea
+export async function convertNoteToTaskAction(noteId: number, projectId: number) {
+   // 1. Leer nota
+   // 2. Crear tarea con titulo de nota
+   // 3. Borrar nota
+   // (Implementación simplificada para brevedad)
+}
