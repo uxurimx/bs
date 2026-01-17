@@ -50,3 +50,5 @@ Ready to deploy in vercel
 dev
 * fix run dev (webpack wpa, turbopack)
 * Payments (stripe, wallet)
+
+deploy on relibros branch
