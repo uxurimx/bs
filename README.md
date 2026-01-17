@@ -52,7 +52,12 @@ Ready to deploy in vercel
 # v0.1.12
 * Added analytics module
 
+# v0.1.13
+* Added scripts on package
+* Added seed for module sharing on db
+
 
 dev
 * Payments (stripe, wallet)
 * fix run dev (webpack wpa, turbopack)
+* 
