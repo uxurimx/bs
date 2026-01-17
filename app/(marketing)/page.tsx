@@ -15,7 +15,7 @@ export default function MarketingPage() {
             <div className="bg-blue-600 text-white p-1.5 rounded-lg">
               <Globe className="w-5 h-5" />
             </div>
-            <span>MirrorQ</span>
+            <span>Branch MirrorQ</span>
           </div>
 
           {/* Menú Derecha (Auth) */}
