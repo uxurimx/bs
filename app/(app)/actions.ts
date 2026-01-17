@@ -11,7 +11,7 @@ import { pushSubscriptions } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 
 import { userSettings } from "@/src/db/schema"; // Importar nueva tabla
-
+import { systemModules } from "@/src/db/schema";
 // 1. Agregamos 'prevState: any' como primer argumento
 // ... imports
 
@@ -166,4 +166,52 @@ export async function toggleUserModuleAction(moduleKey: string, isActive: boolea
     console.error(error);
     return { error: "Error al actualizar módulo" };
   }
+}
+
+// 1. CREAR MÓDULO (SOLO ADMIN)
+export async function createSystemModuleAction(formData: FormData) {
+  const { userId } = await auth();
+  
+  // Guard de Seguridad: Solo el Super Admin pasa
+  if (userId !== process.env.NEXT_PUBLIC_SUPER_ADMIN_ID) {
+    return { error: "Acceso denegado: Nivel 4 requerido." };
+  }
+
+  const name = formData.get("name") as string;
+  const key = formData.get("key") as string; // ej: "billing"
+  const description = formData.get("description") as string;
+  const iconKey = formData.get("iconKey") as string;
+  const isPublic = formData.get("isPublic") === "on";
+
+  if (!name || !key || !iconKey) return { error: "Faltan datos requeridos" };
+
+  try {
+    await db.insert(systemModules).values({
+      key: key.toLowerCase().trim(),
+      name,
+      description,
+      iconKey,
+      isPublic
+    });
+    
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { error: "Error al crear módulo (quizás la Key ya existe)" };
+  }
+}
+
+// 2. OBTENER MÓDULOS (La usaremos en el componente de UI)
+// Nota: Esto también podría hacerse directo en el Server Component, 
+// pero una acción nos da flexibilidad si queremos cargarla lazy.
+export async function getSystemModulesAction() {
+  const { userId } = await auth();
+  const isAdmin = userId === process.env.NEXT_PUBLIC_SUPER_ADMIN_ID;
+
+  // Si es admin, ve todos. Si no, solo los públicos.
+  const modules = await db.select().from(systemModules);
+  
+  if (isAdmin) return modules;
+  return modules.filter(m => m.isPublic);
 }

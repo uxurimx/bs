@@ -1,8 +1,7 @@
-import { Sidebar } from "@/src/components/sidebar"; // Importamos el componente nuevo
-import { userSettings } from "@/src/db/schema";
+import { Sidebar } from "@/src/components/sidebar";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/src/db/index";
-import { tenants } from "@/src/db/schema";
+import { userSettings, systemModules } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
@@ -14,33 +13,28 @@ export default async function AppLayout({
   const { userId } = await auth();
   if (!userId) return redirect("/sign-in");
 
-  // 1. Obtener la configuración del usuario
-  // NOTA: Como aún no tenemos "selección de tenant" en el layout,
-  // tomaremos el primer tenant del usuario para leer su configuración.
-  // En el futuro, esto debería leer el tenant seleccionado en la URL o cookies.
-  // const userTenant = await db.query.tenants.findFirst({
-  //   where: eq(tenants.ownerId, userId),
-  // });
-
+  // 1. Obtener configuración del usuario (Qué tiene activado)
   const userConfig = await db.query.userSettings.findFirst({
     where: eq(userSettings.userId, userId),
   });
+  const activeModulesMap = (userConfig?.settings as any)?.modules || {};
 
-  // 2. Extraer los módulos (o usar defaults si no tiene tenant aún)
-  const defaultModules = { billing: false, reservations: false, ai_menu: false };
-  
-  // TypeScript hack seguro: casteamos el JSON al tipo correcto
-  // const modules = userTenant?.settings 
-  //   ? (userTenant.settings as any).modules 
-  //   : defaultModules;
+  // 2. Obtener catálogo del sistema (Qué existe realmente)
+  const allSystemModules = await db.select().from(systemModules);
 
-  const modules = userConfig?.settings 
-    ? (userConfig.settings as any).modules 
-    : defaultModules;
+  // 3. GENERAR EL MENÚ DINÁMICO
+  // Cruzamos las dos listas: Solo agregamos al menú si existe en DB Y está activo por el usuario
+  const dynamicNavItems = allSystemModules
+    .filter((mod) => activeModulesMap[mod.key] === true) // ¿Está encendido?
+    .map((mod) => ({
+      name: mod.name,
+      href: `/${mod.key}`, // Convención: Si la key es 'crm', la ruta es '/crm'
+      iconKey: mod.iconKey,
+    }));
 
   return (
-    // Pasamos la configuración al componente cliente
-    <Sidebar modules={modules}>
+    // Pasamos la lista ya procesada al Sidebar
+    <Sidebar dynamicNavItems={dynamicNavItems}>
       {children}
     </Sidebar>
   );

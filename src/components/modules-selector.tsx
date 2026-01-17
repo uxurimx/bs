@@ -3,44 +3,26 @@
 import { useState } from "react";
 import { toggleUserModuleAction } from "@/app/(app)/actions";
 import { toast } from "sonner";
-import { CreditCard, CalendarDays, Bot, Check, Lock } from "lucide-react";
+import { Check, Lock } from "lucide-react";
+import * as LucideIcons from "lucide-react"; // Importamos todos para mapear
 import { cn } from "@/src/lib/utils";
 
-// Definición de los módulos disponibles
-const AVAILABLE_MODULES = [
-  {
-    key: "billing",
-    name: "Facturación",
-    description: "Emite facturas fiscales automáticamente.",
-    icon: CreditCard,
-    color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
-  },
-  {
-    key: "reservations",
-    name: "Reservas",
-    description: "Gestión de mesas y citas.",
-    icon: CalendarDays,
-    color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-  },
-  {
-    key: "ai_menu",
-    name: "Menú IA",
-    description: "Optimización de precios con Inteligencia Artificial.",
-    icon: Bot,
-    color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
-  },
-];
-
-type ModulesSelectorProps = {
-  configData: {
-    settings: any; 
-  }
+// Definimos el tipo que viene de la DB
+type SystemModule = {
+  key: string;
+  name: string;
+  description: string | null;
+  iconKey: string;
+  isPublic: boolean | null;
 };
 
-// 👇 CORRECCIÓN AQUÍ: Recibimos 'configData' en lugar de 'tenant'
-export function ModulesSelector({ configData }: ModulesSelectorProps) {
-  
-  // 👇 CORRECCIÓN AQUÍ: Leemos de 'configData.settings'
+type ModulesSelectorProps = {
+  configData: { settings: any };
+  availableModules: SystemModule[]; // Lista que vendrá del servidor
+};
+
+export function ModulesSelector({ configData, availableModules }: ModulesSelectorProps) {
+  // Estado local
   const [modules, setModules] = useState(configData.settings?.modules || {});
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -48,27 +30,32 @@ export function ModulesSelector({ configData }: ModulesSelectorProps) {
     const newValue = !currentValue;
     setLoading(moduleKey);
 
-    // 1. Optimistic Update (Cambiar visualmente YA)
+    // Optimistic Update
     setModules((prev: any) => ({ ...prev, [moduleKey]: newValue }));
 
-    // 2. Server Action
     const result = await toggleUserModuleAction(moduleKey, newValue);
 
     if (result?.error) {
-      // Revertir si falló
       setModules((prev: any) => ({ ...prev, [moduleKey]: currentValue }));
       toast.error(result.error);
     } else {
-      toast.success(`Módulo ${newValue ? 'activado' : 'desactivado'} correctamente`);
+      toast.success(`Módulo ${newValue ? 'activado' : 'desactivado'}`);
     }
     setLoading(null);
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {AVAILABLE_MODULES.map((mod) => {
+      {availableModules.length === 0 && (
+         <p className="text-gray-500 col-span-2 text-center py-4">No hay módulos disponibles en el sistema.</p>
+      )}
+
+      {availableModules.map((mod) => {
         const isActive = modules[mod.key];
-        const isLoading = loading === mod.key;
+        
+        // Mapeo Dinámico de Iconos: Buscamos el string en la librería Lucide
+        // @ts-ignore - Lucide tiene muchos iconos, asumimos que iconKey es válido o fallback
+        const IconComponent = LucideIcons[mod.iconKey] || LucideIcons.Box; 
 
         return (
           <div 
@@ -80,18 +67,25 @@ export function ModulesSelector({ configData }: ModulesSelectorProps) {
                 : "border-gray-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 hover:border-gray-300 dark:hover:border-zinc-700"
             )}
           >
-            {/* Icono */}
-            <div className={cn("p-3 rounded-lg shrink-0", mod.color)}>
-              <mod.icon className="w-6 h-6" />
+            {/* Icono Dinámico */}
+            <div className="p-3 rounded-lg shrink-0 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400">
+              <IconComponent className="w-6 h-6" />
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
-                  {mod.name}
-                </h3>
+                <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
+                    {mod.name}
+                    </h3>
+                    {/* Badge de Privado para Admin */}
+                    {!mod.isPublic && (
+                        <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded border border-red-200">
+                            PRIVADO
+                        </span>
+                    )}
+                </div>
                 
-                {/* Switch Toggle */}
                 <button
                   onClick={() => handleToggle(mod.key, isActive)}
                   disabled={!!loading}
@@ -100,21 +94,15 @@ export function ModulesSelector({ configData }: ModulesSelectorProps) {
                     isActive ? "bg-blue-600" : "bg-gray-200 dark:bg-zinc-700"
                   )}
                 >
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                      isActive ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
+                  <span className={cn("pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out", isActive ? "translate-x-5" : "translate-x-0")} />
                 </button>
               </div>
               
               <p className="text-sm text-gray-500 dark:text-zinc-400 leading-relaxed">
-                {mod.description}
+                {mod.description || "Sin descripción"}
               </p>
 
-              {/* Indicador de Estado */}
+              {/* Estado */}
               <div className="mt-3 flex items-center gap-2 text-xs font-medium">
                 {isActive ? (
                   <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1">

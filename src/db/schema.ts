@@ -46,3 +46,12 @@ export const userSettings = pgTable('user_settings', {
   }),
   createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const systemModules = pgTable('system_modules', {
+  key: text('key').primaryKey(), // ID único: 'billing', 'crm'
+  name: text('name').notNull(),
+  description: text('description'),
+  iconKey: text('icon_key').notNull(), // Guardamos el nombre del icono: 'CreditCard', 'Bot'
+  isPublic: boolean('is_public').default(false), // true = todos lo ven, false = solo admin
+  createdAt: timestamp('created_at').defaultNow(),
+});

@@ -7,13 +7,20 @@ import { PushToggle } from "@/src/components/push-toggle"; // Si ya lo tenías
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 
+import { AdminModuleForm } from "@/src/components/admin-module-form";
+import { getSystemModulesAction } from "@/app/(app)/actions"; // Importar la acción de fetch
+
 export default async function SettingsPage() {
   const { userId } = await auth();
   if (!userId) return <div>No autorizado</div>;
 
+  const isSuperAdmin = userId === process.env.NEXT_PUBLIC_SUPER_ADMIN_ID;
+
   const userConfig = await db.query.userSettings.findFirst({
     where: eq(userSettings.userId, userId),
   });
+
+  const availableModules = await getSystemModulesAction();
 
   // const userTenants = await db
   //   .select()
@@ -36,6 +43,13 @@ export default async function SettingsPage() {
 
       <hr className="border-gray-200 dark:border-zinc-800" />
 
+      {isSuperAdmin && (
+        <section className="animate-in slide-in-from-top-4 duration-700">
+           <AdminModuleForm />
+           <hr className="border-gray-200 dark:border-zinc-800 mt-16" />
+        </section>
+      )}
+
       {/* SECCIÓN 1: SLUGS (Existente) */}
       <section id="slugs" className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="col-span-1">
@@ -55,18 +69,21 @@ export default async function SettingsPage() {
 
       <hr className="border-gray-200 dark:border-zinc-800" />
 
-      {/* SECCIÓN 2: MÓDULOS GLOBALES */}
+      {/* SECCIÓN MÓDULOS */}
       <section id="modules" className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="col-span-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100">App Store / Módulos</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100">App Store</h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
-            Activa funcionalidades para tu panel de control.
+            Instala nuevas capacidades.
           </p>
         </div>
 
         <div className="col-span-2">
-            {/* Solo UN selector, sin repetir por slug */}
-            <ModulesSelector configData={configData} />
+            {/* Pasamos la lista dinámica al componente */}
+            <ModulesSelector 
+                configData={configData} 
+                availableModules={availableModules} 
+            />
         </div>
       </section>
 

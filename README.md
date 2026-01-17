@@ -38,6 +38,10 @@ Ready to deploy in vercel
 # v0.1.9
 * Added dynamic modules
 
+# v0.1.10
+* Added admin & superAdmin level
+* Modules creation & management
+* Smart sidenav
 
 
 
