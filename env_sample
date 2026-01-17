@@ -1,16 +1,17 @@
-# keep Neon credentials secure: do not expose them to client-side code
+#Neon DB Credentials
+DATABASE_URL=''
 
-DATABASE_URL='postgresql://user:pass@db'
-
+#Clerk Credentials
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_
 CLERK_SECRET_KEY=sk_test_
 
+# VAPID Keys for Push Notifications
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=""
+VAPID_PRIVATE_KEY=""
+VAPID_SUBJECT="mailto:user@gmail.com"
+
+# Super Admin User ID
+NEXT_PUBLIC_SUPER_ADMIN_ID=user_
+
+# Application Settings
 NODE_ENV=development
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
-
-
-
-
