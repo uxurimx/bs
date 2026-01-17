@@ -1,68 +1,69 @@
-'use client'; // <--- Esto lo hace interactivo
+"use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { createTenantAction } from "@/app/(app)/actions";
-import { useEffect } from "react";
-import { toast } from "sonner"; // <--- Importar
+import { toast } from "sonner";
 
 const initialState = {
   error: "",
 };
 
-export function CreateTenantForm() {
-  // useActionState conecta tu Server Action con el estado del formulario
+// Aceptamos una prop opcional para cerrar el modal si es necesario
+// (Aunque este form hace redirect, es buena práctica tenerlo)
+export function CreateTenantForm({ onSuccess }: { onSuccess?: () => void }) {
   const [state, formAction, isPending] = useActionState(createTenantAction, initialState);
 
   useEffect(() => {
     if (state?.error) {
-      toast.error(state.error); // <--- Muestra el error del servidor (ej: "Slug duplicado")
+      toast.error(state.error);
     }
-  }, [state]);
+    // Si la acción tuviera éxito sin redirect, aquí llamaríamos a onSuccess()
+  }, [state, onSuccess]);
 
   return (
     <form action={formAction} className="space-y-4">
-      {/* Input NOMBRE */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Negocio</label>
-        <input 
-          name="name" 
-          type="text" 
-          placeholder="Tío Sam" 
-          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-          required 
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+          Nombre del Restaurante
+        </label>
+        <input
+          type="text"
+          name="name"
+          id="name"
+          required
+          placeholder="Ej: Pizzería Don Pepe"
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
         />
       </div>
 
-      {/* Input SLUG */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Slug (Subdominio)</label>
-        <div className="flex items-center">
-          <input 
-            name="slug" 
-            type="text" 
-            placeholder="tiosam" 
-            className="flex-1 p-2 border rounded-l-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            required 
+        <label htmlFor="slug" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+          Slug (URL)
+        </label>
+        <div className="flex rounded-lg shadow-sm">
+          <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 text-gray-500 dark:text-zinc-500 text-sm">
+            http://
+          </span>
+          <input
+            type="text"
+            name="slug"
+            id="slug"
+            required
+            placeholder="donpepe"
+            className="flex-1 min-w-0 block w-full px-4 py-2 rounded-none border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
           />
-          <span className="bg-gray-100 p-2 border border-l-0 rounded-r-lg text-gray-500">.yumm.lat</span>
+          <span className="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-gray-300 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900 text-gray-500 dark:text-zinc-500 text-sm">
+            .localhost
+          </span>
         </div>
-        <p className="text-xs text-gray-400 mt-1">Solo letras minúsculas, sin espacios.</p>
       </div>
 
-      {/* MENSAJE DE ERROR (Si el servidor responde algo malo) */}
-      {state.error && (
-        <div className="text-red-500 text-sm font-medium bg-red-50 p-2 rounded">
-          ⚠️ {state.error}
-        </div>
-      )}
-
-      {/* BOTÓN SUBMIT (Con estado de carga) */}
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         disabled={isPending}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-bold transition disabled:opacity-50"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-lg mt-2"
       >
-        {isPending ? "Creando..." : "Crear"}
+        {isPending ? "Creando..." : "🚀 Crear Restaurante"}
       </button>
     </form>
   );
