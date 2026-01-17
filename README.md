@@ -57,6 +57,10 @@ Ready to deploy in vercel
 * Added seed for module sharing on db
 * Added env management
 
+# v0.1.14 - mod_projects
+* Create module projects
+
+
 dev
 * Payments (stripe, wallet)
 * fix run dev (webpack wpa, turbopack)
