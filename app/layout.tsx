@@ -5,7 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from "@/src/components/theme-provider"; // <--- Importar
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
-
+import { Analytics } from "@vercel/analytics/react";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -39,6 +39,7 @@ export default function RootLayout({
           >
             {children}
             <Toaster position="bottom-right" richColors theme="system" />
+            <Analytics />
             </ThemeProvider>
           </body>
       </html>

@@ -42,10 +42,10 @@ Ready to deploy in vercel
 * Added admin & superAdmin level
 * Modules creation & management
 * Smart sidenav
+* Configuraation re-organized
 
-
-
+# v0.1.11
+* Added vercel analytics
 
 dev
-* Add analitycs
 * Payments (stripe, wallet)
