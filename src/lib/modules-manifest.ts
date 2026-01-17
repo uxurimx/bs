@@ -1,10 +1,10 @@
 // src/lib/modules-manifest.ts
 export const CORE_MODULES = [
   {
-    key: "metrics",
-    name: "Métricas & Análisis II",
+    key: "projects",
+    name: "Proyectos",
     iconKey: "BarChart3",
-    description: "Dashboard de métricas y análisis.",
+    description: "Gestión de proyectos.",
     isPublic: false
   },
 ];
