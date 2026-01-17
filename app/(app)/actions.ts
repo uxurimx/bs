@@ -12,6 +12,10 @@ import { eq } from "drizzle-orm";
 
 import { userSettings } from "@/src/db/schema"; // Importar nueva tabla
 import { systemModules } from "@/src/db/schema";
+
+import { analyticsEvents } from "@/src/db/schema";
+import { headers } from "next/headers";
+import { userAgent } from "next/server";
 // 1. Agregamos 'prevState: any' como primer argumento
 // ... imports
 
@@ -214,4 +218,73 @@ export async function getSystemModulesAction() {
   
   if (isAdmin) return modules;
   return modules.filter(m => m.isPublic);
+}
+
+// 👇 ACCIÓN PÚBLICA: Registrar Visita
+export async function trackVisitAction(path: string) {
+  // 1. Extraer datos del Request (Vercel nos da la info gratis en los headers)
+  const headerList = await headers();
+  const country = headerList.get('x-vercel-ip-country') || 'Unknown';
+  
+  // 2. Parsear el User Agent (Dispositivo)
+  // Nota: En Next 15/16 userAgent() necesita el request object, pero en Server Actions 
+  // podemos obtenerlo de los headers. Para simplificar, usaremos el header 'user-agent'.
+  const uaString = headerList.get('user-agent') || '';
+  
+  // Análisis simple de dispositivo (puedes usar librerías más potentes si quieres)
+  const isMobile = /mobile/i.test(uaString);
+  const deviceType = isMobile ? "mobile" : "desktop";
+
+  // 3. Guardar en DB (Fire and forget)
+  try {
+    await db.insert(analyticsEvents).values({
+      path,
+      country,
+      device: deviceType,
+      // browser y os requerirían un parser más complejo como 'ua-parser-js', 
+      // por ahora lo dejamos simple o genérico
+      browser: "chrome", 
+      os: "generic"
+    });
+  } catch (e) {
+    console.error("Error tracking visit:", e);
+    // No lanzamos error para no romper la navegación del usuario
+  }
+}
+
+type MetricData = { name: string; value: number };
+
+export async function getMetricsAction() {
+  const { userId } = await auth();
+  
+  // 1. Inicialización con tipos correctos
+  if (!userId) return { totalViews: 0, viewsByCountry: [] as MetricData[] };
+
+  try {
+    const allEvents = await db.select().from(analyticsEvents);
+    const totalViews = allEvents.length;
+
+    // 2. Reducer TIPADO
+    // Le decimos: "El acumulador es un objeto donde las llaves son strings y los valores son MetricData"
+    const groupedByCountry = allEvents.reduce<Record<string, MetricData>>((acc, curr) => {
+      const code = curr.country || 'Unknown';
+      
+      if (!acc[code]) {
+        acc[code] = { name: code, value: 0 };
+      }
+      
+      acc[code].value++;
+      return acc;
+    }, {});
+
+    // 3. Convertir a Array (Ahora TS sabe que esto devuelve MetricData[])
+    const viewsByCountry = Object.values(groupedByCountry);
+
+    return { totalViews, viewsByCountry };
+    
+  } catch (error) {
+    console.error("Error fetching metrics:", error);
+    // En caso de error, devolver arrays vacíos para no romper la UI
+    return { totalViews: 0, viewsByCountry: [] as MetricData[] };
+  }
 }
