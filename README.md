@@ -45,8 +45,14 @@ Ready to deploy in vercel
 * Configuraation re-organized
 
 # v0.1.11
-* Added vercel analytics
+* Hide slugs for simplicity reasons (not used yet)
+* Update next from 14 to 16
+* Changes on middleware
+
+# v0.1.12
+* Added analytics module
+
 
 dev
-* fix run dev (webpack wpa, turbopack)
 * Payments (stripe, wallet)
+* fix run dev (webpack wpa, turbopack)

@@ -1,5 +1,5 @@
 // src/db/schema.ts
-import { pgTable, serial, text, timestamp, boolean, json } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, boolean, json, integer } from 'drizzle-orm/pg-core';
 
 // Definimos la tabla 'tenants' (restaurantes)
 export const tenants = pgTable('tenants', {
@@ -54,4 +54,16 @@ export const systemModules = pgTable('system_modules', {
   iconKey: text('icon_key').notNull(), // Guardamos el nombre del icono: 'CreditCard', 'Bot'
   isPublic: boolean('is_public').default(false), // true = todos lo ven, false = solo admin
   createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const analyticsEvents = pgTable('analytics_events', {
+  id: serial('id').primaryKey(),
+  path: text('path'),            // Qué página vio (ej: /pizzeria-don-pepe)
+  country: text('country'),      // País (MX, US, ES)
+  device: text('device'),        // mobile, desktop
+  browser: text('browser'),      // chrome, safari
+  os: text('os'),                // ios, android, windows
+  timestamp: timestamp('timestamp').defaultNow(),
+  // Opcional: Si quieres relacionarlo con un tenant específico
+  // tenantId: text('tenant_id'), 
 });

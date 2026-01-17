@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/src/components/theme-provider"; // <--- Importa
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
+import { AnalyticsTracker } from "@/src/components/analytics-tracker";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -38,6 +40,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <AnalyticsTracker />
             <Toaster position="bottom-right" richColors theme="system" />
             <Analytics />
             </ThemeProvider>
